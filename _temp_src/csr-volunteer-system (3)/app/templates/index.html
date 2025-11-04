@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - CSR Volunteer Matching System{% endblock %}
+
+{% block content %}
+<div class="min-h-[70vh] flex items-center justify-center">
+    <div class="text-center max-w-2xl">
+        <h1 class="text-5xl font-bold text-gray-900 mb-6">
+            CSR Volunteer Matching System
+        </h1>
+        <p class="text-xl text-gray-600 mb-8 leading-relaxed">
+            Connecting Corporate Social Responsibility representatives with Persons-in-Need
+            to create meaningful volunteer opportunities and support.
+        </p>
+        <div class="flex gap-4 justify-center">
+            <a href="{{ url_for('auth.login') }}" 
+               class="px-8 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 font-medium transition">
+                Login
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
