@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Profile Details - Admin{% endblock %}
+
+{% block nav_links %}
+<a href="{{ url_for('boundary.admin_dashboard') }}" class="text-gray-700 hover:text-primary">Dashboard</a>
+<a href="{{ url_for('boundary.admin_users') }}" class="text-gray-700 hover:text-primary">User Account</a>
+<a href="{{ url_for('boundary.admin_profiles') }}" class="text-gray-700 hover:text-primary">User Profile</a>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+
+  <h1 class="text-3xl font-bold mt-4 mb-2">Profile Details</h1>
+  <p class="text-gray-600 mb-6">Information about this user profile.</p>
+
+  <div class="bg-white shadow rounded-lg divide-y">
+    <dl class="sm:divide-y sm:divide-gray-200">
+
+      <div class="px-6 py-4 grid grid-cols-3 gap-4">
+        <dt class="text-sm font-medium text-gray-500">Profile ID</dt>
+        <dd class="col-span-2 text-sm text-gray-900">{{ profile.profileID }}</dd>
+      </div>
+
+      <div class="px-6 py-4 grid grid-cols-3 gap-4">
+        <dt class="text-sm font-medium text-gray-500">Profile Name</dt>
+        <dd class="col-span-2 text-sm text-gray-900">{{ profile.profileName }}</dd>
+      </div>
+
+      <div class="px-6 py-4 grid grid-cols-3 gap-4">
+        <dt class="text-sm font-medium text-gray-500">Description</dt>
+        <dd class="col-span-2 text-sm text-gray-900">{{ profile.description }}</dd>
+      </div>
+
+      <div class="px-6 py-4 grid grid-cols-3 gap-4">
+        <dt class="text-sm font-medium text-gray-500">Status</dt>
+        <dd class="col-span-2">
+          {% if profile.isActive %}
+            <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Active</span>
+          {% else %}
+            <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Suspended</span>
+          {% endif %}
+        </dd>
+      </div>
+
+    </dl>
+  </div>
+
+  <!-- Back button -->
+  <div class="mt-8">
+    <a href="{{ url_for('boundary.admin_profiles') }}" class="text-primary hover:text-blue-700">
+      &larr; Back to User Profiles
+    </a>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}User Details - Admin{% endblock %}
+
+{% block nav_links %}
+<a href="{{ url_for('boundary.admin_dashboard') }}" class="text-gray-700 hover:text-primary">Dashboard</a>
+<a href="{{ url_for('boundary.admin_users') }}" class="text-gray-700 hover:text-primary">User Account</a>
+<a href="{{ url_for('boundary.admin_profiles') }}" class="text-gray-700 hover:text-primary">User Profile</a>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+
+  <h1 class="text-3xl font-bold mt-4 mb-2">User Account Details</h1>
+  <p class="text-gray-600 mb-6">Full record for this user.</p>
+
+  <div class="bg-white shadow rounded-lg divide-y">
+    <dl class="sm:divide-y sm:divide-gray-200">
+
+      <div class="px-6 py-4 grid grid-cols-3 gap-4">
+        <dt class="text-sm font-medium text-gray-500">User ID</dt>
+        <dd class="col-span-2 text-sm text-gray-900">{{ user.userID }}</dd>
+      </div>
+
+      <div class="px-6 py-4 grid grid-cols-3 gap-4">
+        <dt class="text-sm font-medium text-gray-500">Name</dt>
+        <dd class="col-span-2 text-sm text-gray-900">{{ user.name }}</dd>
+      </div>
+
+      <div class="px-6 py-4 grid grid-cols-3 gap-4">
+        <dt class="text-sm font-medium text-gray-500">Email</dt>
+        <dd class="col-span-2 text-sm text-gray-900">{{ user.email }}</dd>
+      </div>
+
+      <!-- phone number -->
+      <div class="px-6 py-4 grid grid-cols-3 gap-4">
+        <dt class="text-sm font-medium text-gray-500">Phone Number</dt>
+        <dd class="col-span-2 text-sm text-gray-900">{{ user.phoneNumber or '—' }}</dd>
+      </div>
+
+      <div class="px-6 py-4 grid grid-cols-3 gap-4">
+        <dt class="text-sm font-medium text-gray-500">Profile (ID)</dt>
+        <dd class="col-span-2 text-sm text-gray-900">
+          {{ user.profileID }} — {{ user.profile.profileName }}
+        </dd>
+      </div>
+
+      <div class="px-6 py-4 grid grid-cols-3 gap-4">
+        <dt class="text-sm font-medium text-gray-500">Status</dt>
+        <dd class="col-span-2">
+          {% if user.isActive %}
+          <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Active</span>
+          {% else %}
+          <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Suspended</span>
+          {% endif %}
+        </dd>
+      </div>
+
+      {% if user.age %}
+      <div class="px-6 py-4 grid grid-cols-3 gap-4">
+        <dt class="text-sm font-medium text-gray-500">Age</dt>
+        <dd class="col-span-2 text-sm text-gray-900">{{ user.age }}</dd>
+      </div>
+      {% endif %}
+
+    </dl>
+  </div>
+
+  <!-- Back button -->
+  <div class="mt-8">
+    <a href="{{ url_for('boundary.admin_users') }}" class="text-primary hover:text-blue-700">
+      &larr; Back to Manage Users
+    </a>
+  </div>
+
+</div>
+{% endblock %}

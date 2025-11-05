@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - CSR Volunteer System{% endblock %}
+
+{% block nav_links %}
+<!-- Navigation links for admin -->
+<a href="{{ url_for('boundary.admin_users') }}" class="text-gray-700 hover:text-primary">User Account</a>
+<a href="{{ url_for('boundary.admin_profiles') }}" class="text-gray-700 hover:text-primary">User Profile</a>
+{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+  <h1 class="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+  <p class="text-gray-600 mt-2">Manage users and profiles</p>
+</div>
+
+<!-- 4 stats cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+
+  <!-- Total Users -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-gray-600">Total Users</p>
+        <p class="text-3xl font-bold text-gray-900 mt-1">{{ total_users }}</p>
+      </div>
+      <div class="bg-blue-100 rounded-full p-3">
+        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Users -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-gray-600">Active Users</p>
+        <p class="text-3xl font-bold text-green-600 mt-1">{{ active_users }}</p>
+      </div>
+      <div class="bg-green-100 rounded-full p-3">
+        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Suspended Users -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-gray-600">Suspended Users</p>
+        <p class="text-3xl font-bold text-red-600 mt-1">{{ suspended_users }}</p>
+      </div>
+      <div class="bg-red-100 rounded-full p-3">
+        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 9v2m0 4h.01M12 5a7 7 0 100 14 7 7 0 000-14z"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Profiles -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-gray-600">User Profiles</p>
+        <p class="text-3xl font-bold text-gray-900 mt-1">{{ total_profiles }}</p>
+      </div>
+      <div class="bg-purple-100 rounded-full p-3">
+        <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="bg-white rounded-lg shadow p-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+    <div class="space-y-3">
+      <a href="{{ url_for('boundary.admin_create_user') }}"
+         class="block w-full text-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition">
+        Create New User
+      </a>
+      <a href="{{ url_for('boundary.admin_users') }}"
+         class="block w-full text-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+        View All Users
+      </a>
+      <a href="{{ url_for('boundary.admin_create_profile') }}"
+         class="block w-full text-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+        Create New Profile
+      </a>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow p-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">System Information</h2>
+    <div class="space-y-3 text-sm">
+      <div class="flex justify-between py-2 border-b border-gray-100">
+        <span class="text-gray-600">Logged in as:</span>
+        <span class="font-medium">{{ current_user.name }}</span>
+      </div>
+      <div class="flex justify-between py-2 border-b border-gray-100">
+        <span class="text-gray-600">Role:</span>
+        <span class="font-medium">{{ current_user.profile.profileName }}</span>
+      </div>
+      <div class="flex justify-between py-2">
+        <span class="text-gray-600">Email:</span>
+        <span class="font-medium">{{ current_user.email }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

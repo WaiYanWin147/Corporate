@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Edit User - Admin{% endblock %}
+
+{% block nav_links %}
+<a href="{{ url_for('boundary.admin_dashboard') }}" class="text-gray-700 hover:text-primary">Dashboard</a>
+<a href="{{ url_for('boundary.admin_users') }}" class="text-gray-700 hover:text-primary">User Account</a>
+<a href="{{ url_for('boundary.admin_profiles') }}" class="text-gray-700 hover:text-primary">User Profile</a>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6 text-center">
+        <h1 class="text-3xl font-bold text-gray-900">Edit User</h1>
+        <p class="text-gray-600 mt-1">Update account details below</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <form method="POST" action="{{ url_for('boundary.admin_edit_user', user_id=user.userID) }}" class="space-y-5">
+
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                <input type="text" id="name" name="name" value="{{ user.name }}" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+            </div>
+
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                <input type="email" id="email" name="email" value="{{ user.email }}" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+            </div>
+
+            <!-- profile dropdown -->
+            <div>
+                <label for="profile_id" class="block text-sm font-medium text-gray-700 mb-1">Profile *</label>
+                <select name="profile_id" id="profile_id"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                    {% for p in profiles %}
+                        <option value="{{ p.profileID }}" {% if user.profileID == p.profileID %}selected{% endif %}>
+                            {{ p.profileName }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="age" class="block text-sm font-medium text-gray-700 mb-1">Age</label>
+                    <input type="number" id="age" name="age" min="1" max="120"
+                           value="{{ user.age or '' }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                </div>
+                <div>
+                    <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input type="tel" id="phoneNumber" name="phoneNumber" value="{{ user.phoneNumber or '' }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                </div>
+            </div>
+
+            <!-- single password field -->
+            <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                <label for="new_password" class="block text-sm font-medium text-gray-700 mb-1">
+                    New Password (optional)
+                </label>
+                <input type="password" id="new_password" name="new_password"
+                       placeholder="Leave blank to keep current password"
+                       minlength="8"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                <p class="text-xs text-gray-500 mt-2">
+                    Leave blank if you don’t want to change the password.
+                </p>
+            </div>
+
+            <div class="flex gap-3 pt-4">
+                <button type="submit"
+                        class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-blue-700 transition">
+                    Update User
+                </button>
+                <a href="{{ url_for('boundary.admin_users') }}"
+                   class="flex-1 text-center bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="mt-6 text-center">
+        <a href="{{ url_for('boundary.admin_users') }}" class="text-primary hover:text-blue-700">
+            ← Back to Users
+        </a>
+    </div>
+</div>
+{% endblock %}

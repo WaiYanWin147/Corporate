@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Profiles - Admin{% endblock %}
+
+{% block nav_links %}
+<a href="{{ url_for('boundary.admin_dashboard') }}" class="text-gray-700 hover:text-primary">Dashboard</a>
+<a href="{{ url_for('boundary.admin_users') }}" class="text-gray-700 hover:text-primary">User Account</a>
+<a href="{{ url_for('boundary.admin_profiles') }}" class="text-gray-700 hover:text-primary">User Profile</a>
+{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex justify-between items-center">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">Manage Profiles</h1>
+        <p class="text-gray-600 mt-2">View and manage user role profiles</p>
+    </div>
+    <a href="{{ url_for('boundary.admin_create_profile') }}" 
+       class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition">
+        Create New Profile
+    </a>
+</div>
+
+<!-- Search Users by Profile ID -->
+<div class="bg-white rounded-lg shadow mb-6 p-4">
+    <form method="GET" action="{{ url_for('boundary.admin_search_users_by_profile') }}" class="flex gap-2">
+        <input type="number"
+               name="profile_id"
+               min="1" 
+               placeholder="Enter Profile ID to find its users..."
+               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+        <button type="submit"
+                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition">
+            Search
+        </button>
+    </form>
+</div>
+
+<!-- Profiles Table -->
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profile Name</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Users</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for profile in profiles %}
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {{ profile.profileName }}
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600">
+                    {{ profile.description or 'No description' }}
+                </td>
+
+                <!-- Status -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                    {% if profile.isActive %}
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Active</span>
+                    {% else %}
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Inactive</span>
+                    {% endif %}
+                </td>
+
+                <!-- User Count -->
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {{ profile.users|length }} users
+                </td>
+
+                <!-- Actions -->
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <div class="flex gap-2 items-center">
+
+                        <!-- View -->
+                        <a href="{{ url_for('boundary.admin_view_profile', profile_id=profile.profileID) }}"
+                           class="text-blue-600 hover:text-blue-800">View</a>
+
+                        <span class="text-gray-300">|</span>
+
+                        <!-- Edit -->
+                        <a href="{{ url_for('boundary.admin_edit_profile', profile_id=profile.profileID) }}"
+                           class="text-blue-600 hover:text-blue-800">Edit</a>
+
+                        <span class="text-gray-300">|</span>
+
+                        <!-- Suspend / Activate -->
+                        {% if profile.isActive %}
+                        <a href="{{ url_for('boundary.admin_suspend_profile', profile_id=profile.profileID) }}"
+                           class="text-red-600 hover:text-red-800">Suspend</a>
+                        {% else %}
+                        <a href="{{ url_for('boundary.admin_activate_profile', profile_id=profile.profileID) }}"
+                           class="text-green-600 hover:text-green-800">Activate</a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="mt-6">
+    <a href="{{ url_for('boundary.admin_dashboard') }}" 
+       class="text-primary hover:text-blue-700">
+        ← Back to Dashboard
+    </a>
+</div>
+{% endblock %}
