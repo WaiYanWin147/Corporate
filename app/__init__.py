@@ -12,7 +12,7 @@ def create_app():
     login_manager.init_app(app)
 
     with app.app_context():
-        
+        from app.entity.user_profile import UserProfile
         from app.entity.user_account import UserAccount
         
         db.create_all()
