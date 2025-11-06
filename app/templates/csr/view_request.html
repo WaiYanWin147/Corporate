@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}{{ request.requestTitle }} - CSR{% endblock %}
+
+{% block nav_links %}
+<a href="{{ url_for('boundary.csr_dashboard') }}" class="text-gray-700 hover:text-primary">Dashboard</a>
+<a href="{{ url_for('boundary.csr_requests') }}" class="text-gray-700 hover:text-primary">Requests</a>
+<a href="{{ url_for('boundary.csr_shortlist') }}" class="text-gray-700 hover:text-primary">Shortlist</a>
+<a href="{{ url_for('boundary.csr_matches') }}" class="text-gray-700 hover:text-primary">Completed Matches</a>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-lg shadow p-8">
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ request.requestTitle }}</h1>
+                <span class="px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800">
+                    {{ request.category.categoryName }}
+                </span>
+            </div>
+            <span class="px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800">
+                {{ request.status }}
+            </span>
+        </div>
+
+        <div class="mb-6 pb-6 border-b border-gray-200">
+            <h2 class="text-lg font-bold text-gray-900 mb-3">Description</h2>
+            <p class="text-gray-700 leading-relaxed whitespace-pre-line">{{ request.description }}</p>
+        </div>
+
+        <div class="mb-6 pb-6 border-b border-gray-200">
+            <h2 class="text-lg font-bold text-gray-900 mb-3">Request Information</h2>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <p class="text-gray-600">Posted by:</p>
+                    <p class="font-medium">{{ request.person_in_need.name }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-600">Contact:</p>
+                    <p class="font-medium">{{ request.person_in_need.email }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex gap-4">
+            {% if is_shortlisted %}
+            <form method="POST" action="{{ url_for('boundary.csr_shortlist_remove', request_id=request.requestID) }}" class="flex-1">
+                <button type="submit" 
+                        class="w-full px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium">
+                    Remove from Shortlist
+                </button>
+            </form>
+            {% else %}
+            <form method="POST" action="{{ url_for('boundary.csr_shortlist_add', request_id=request.requestID) }}" class="flex-1">
+                <button type="submit" 
+                        class="w-full px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition font-medium">
+                    Add to Shortlist
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mt-6">
+        <a href="{{ url_for('boundary.csr_requests') }}" class="text-primary hover:text-blue-700">
+            ← Back to Requests
+        </a>
+    </div>
+</div>
+{% endblock %}
