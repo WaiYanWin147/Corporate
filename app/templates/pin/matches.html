@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}My Completed Matches - PIN{% endblock %}
+
+{% block nav_links %}
+<a href="{{ url_for('boundary.pin_dashboard') }}" class="text-gray-700 hover:text-primary">Dashboard</a>
+<a href="{{ url_for('boundary.pin_requests') }}" class="text-gray-700 hover:text-primary">My Requests</a>
+{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">My Completed Matches</h1>
+    <p class="text-gray-600 mt-2">Search your completed volunteer services by category or date range.</p>
+</div>
+
+<!-- Search + Date Filter -->
+<div class="bg-white rounded-lg shadow mb-6 p-4">
+    <form method="GET" action="{{ url_for('boundary.pin_match_records') }}" class="flex flex-wrap gap-3 items-center">
+        <!-- Category Filter -->
+        <input type="text"
+               name="category"
+               value="{{ category_query }}"
+               placeholder="Search by category..."
+               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+
+        <!-- Start Date -->
+        <input type="date"
+               name="start_date"
+               value="{{ start_date }}"
+               class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+
+        <!-- End Date -->
+        <input type="date"
+               name="end_date"
+               value="{{ end_date }}"
+               class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+
+        <button type="submit"
+                class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition text-sm">
+            Filter
+        </button>
+
+        {% if category_query or start_date or end_date %}
+        <a href="{{ url_for('boundary.pin_match_records') }}"
+           class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm">
+            Clear
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Table -->
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Request</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">CSR Representative</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Completed Date</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for match in matches %}
+            <tr>
+                <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ match.request.title }}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">{{ match.category.categoryName }}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">{{ match.csr_representative.name }}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">
+                    {{ match.completedAt.strftime('%Y-%m-%d') if match.completedAt else 'N/A' }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                        {{ match.status|capitalize }}
+                    </span>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                    No completed matches found for selected filters.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+{% if pagination and pagination.pages > 1 %}
+<div class="mt-8 flex justify-end items-center gap-4">
+    {% if pagination.has_prev %}
+    <a href="{{ url_for('boundary.pin_match_records', page=pagination.prev_num, category=category_query, start_date=start_date, end_date=end_date) }}"
+       class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">← Previous</a>
+    {% else %}
+    <span class="px-4 py-2 text-gray-400 cursor-not-allowed">← Previous</span>
+    {% endif %}
+
+    <span class="text-sm text-gray-600">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+
+    {% if pagination.has_next %}
+    <a href="{{ url_for('boundary.pin_match_records', page=pagination.next_num, category=category_query, start_date=start_date, end_date=end_date) }}"
+       class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-700 transition">Next →</a>
+    {% else %}
+    <span class="px-4 py-2 text-gray-400 cursor-not-allowed">Next →</span>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="mt-6">
+    <a href="{{ url_for('boundary.pin_dashboard') }}" class="text-primary hover:text-blue-700">
+        ← Back to Dashboard
+    </a>
+</div>
+{% endblock %}
