@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}My Shortlist - CSR{% endblock %}
+
+{% block nav_links %}
+<a href="{{ url_for('boundary.csr_dashboard') }}" class="text-gray-700 hover:text-primary">Dashboard</a>
+<a href="{{ url_for('boundary.csr_requests') }}" class="text-gray-700 hover:text-primary">Requests</a>
+<a href="{{ url_for('boundary.csr_matches') }}" class="text-gray-700 hover:text-primary">Completed Matches</a>
+{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">My Shortlist</h1>
+    <p class="text-gray-600 mt-2">Requests you've saved for later</p>
+</div>
+
+<!-- 🔍 Filter by Category -->
+<div class="bg-white rounded-lg shadow mb-6 p-4">
+    <form method="GET" action="{{ url_for('boundary.csr_shortlist') }}" class="flex gap-2 items-center">
+        <label class="text-sm text-gray-600">Search by category:</label>
+        <select name="category"
+                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                onchange="this.form.submit()">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+                <option value="{{ cat.categoryID }}" {% if selected_category == cat.categoryID %}selected{% endif %}>
+                    {{ cat.categoryName }}
+                </option>
+            {% endfor %}
+        </select>
+
+        {% if selected_category %}
+        <a href="{{ url_for('boundary.csr_shortlist') }}"
+           class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm">
+            Clear Filter
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- 💾 Shortlisted Requests -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for req in requests %}
+    <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
+        <div class="p-6">
+            <div class="flex justify-between items-start mb-3">
+                <h3 class="text-lg font-bold text-gray-900">{{ req.title }}</h3>
+                <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                    {{ req.category.categoryName }}
+                </span>
+            </div>
+
+            <p class="text-sm text-gray-600 mb-4 line-clamp-3">
+                {{ req.description }}
+            </p>
+
+            <div class="text-xs text-gray-500 mb-4">
+                <p>Posted by: {{ req.person_in_need.name }}</p>
+            </div>
+
+            <div class="flex gap-2">
+                <a href="{{ url_for('boundary.csr_view_request', request_id=req.requestID) }}" 
+                   class="flex-1 text-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition text-sm">
+                    View Details
+                </a>
+
+                <form method="POST" action="{{ url_for('boundary.csr_shortlist_remove', request_id=req.requestID) }}">
+                    <button type="submit" 
+                            class="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition text-sm">
+                        Remove
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-span-full text-center py-12">
+        <p class="text-gray-500 mb-4">Your shortlist is empty.</p>
+        <a href="{{ url_for('boundary.csr_requests') }}" 
+           class="text-primary hover:text-blue-700 font-medium">
+            Browse Requests →
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if pagination.pages > 1 %}
+<div class="mt-8 flex justify-end items-center gap-4">
+    {% if pagination.has_prev %}
+    <a href="{{ url_for('boundary.csr_shortlist', page=pagination.prev_num, category=selected_category) }}" 
+       class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">← Previous</a>
+    {% else %}
+    <span class="px-4 py-2 text-gray-400 cursor-not-allowed">← Previous</span>
+    {% endif %}
+
+    <span class="text-sm text-gray-600">
+        Page {{ pagination.page }} of {{ pagination.pages }}
+    </span>
+
+    {% if pagination.has_next %}
+    <a href="{{ url_for('boundary.csr_shortlist', page=pagination.next_num, category=selected_category) }}" 
+       class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-700">Next →</a>
+    {% else %}
+    <span class="px-4 py-2 text-gray-400 cursor-not-allowed">Next →</span>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="mt-6">
+    <a href="{{ url_for('boundary.csr_dashboard') }}" class="text-primary hover:text-blue-700">
+        ← Back to Dashboard
+    </a>
+</div>
+{% endblock %}
