@@ -14,7 +14,11 @@ def create_app():
     with app.app_context():
         from app.entity.user_profile import UserProfile
         from app.entity.user_account import UserAccount
-        
+        from app.entity.category import Category
+        from app.entity.request import Request
+        from app.entity.shortlist import Shortlist
+        from app.entity.match_record import MatchRecord
+        from app.entity.report import Report
         db.create_all()
         register_blueprints(app)
 
