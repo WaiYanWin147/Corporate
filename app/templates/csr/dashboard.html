@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}CSR Dashboard - CSR Volunteer System{% endblock %}
+
+{% block nav_links %}
+<a href="{{ url_for('boundary.csr_requests') }}" class="text-gray-700 hover:text-primary">Requests</a>
+<a href="{{ url_for('boundary.csr_shortlist') }}" class="text-gray-700 hover:text-primary">Shortlist</a>
+<a href="{{ url_for('boundary.csr_matches') }}" class="text-gray-700 hover:text-primary">Completed Matches</a>
+{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">CSR Representative Dashboard</h1>
+    <p class="text-gray-600 mt-2">View requests and manage volunteer opportunities</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">Open Requests</p>
+                <p class="text-3xl font-bold text-gray-900 mt-1">{{ open_requests_count }}</p>
+            </div>
+            <div class="bg-blue-100 rounded-full p-3">
+                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">My Shortlist</p>
+                <p class="text-3xl font-bold text-yellow-600 mt-1">{{ shortlist_count }}</p>
+            </div>
+            <div class="bg-yellow-100 rounded-full p-3">
+                <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">Completed Matches</p>
+                <p class="text-3xl font-bold text-green-600 mt-1">{{ matches_count }}</p>
+            </div>
+            <div class="bg-green-100 rounded-full p-3">
+                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+        <div class="space-y-3">
+            <a href="{{ url_for('boundary.csr_requests') }}" 
+               class="block w-full text-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition">
+                Browse Requests
+            </a>
+            <a href="{{ url_for('boundary.csr_shortlist') }}" 
+               class="block w-full text-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                Shortlist
+            </a>
+            <a href="{{ url_for('boundary.csr_matches') }}" 
+               class="block w-full text-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                Completed Matches
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Current User Information</h2>
+        <div class="space-y-3 text-sm">
+            <div class="flex justify-between py-2 border-b border-gray-100">
+                <span class="text-gray-600">Representative:</span>
+                <span class="font-medium">{{ current_user.name }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
