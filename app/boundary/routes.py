@@ -31,6 +31,16 @@ from app.control.csr_searchHistory_controller import CsrSearchHistoryController
 from app.control.csr_viewHistory_controller import CsrViewHistoryController
 from app.control.csr_removeShortlist_controller import CsrRemoveShortlistController
 
+# --- PIN controllers ---
+from app.entity.request import Request
+from app.control.pin_createRequest_controller import PinCreateRequestController
+from app.control.pin_viewRequest_controller import PinViewRequestController
+from app.control.pin_updateRequest_controller import PinUpdateRequestController
+from app.control.pin_deleteRequest_controller import PinDeleteRequestController
+from app.control.pin_searchRequest_controller import PinSearchRequestController
+from app.control.pin_trackViews_controller import PinTrackViewsController
+from app.control.pin_trackShortlists_controller import PinTrackShortlistsController
+
 boundary_bp = Blueprint("boundary", __name__)
 
 # ----------------------------------
@@ -573,3 +583,228 @@ def csr_shortlist_remove(request_id):
     except Exception as e:
         flash(f"Unexpected error: {e}", "danger")
     return redirect(url_for("boundary.csr_shortlist"))
+
+# ----------------------------------
+# PIN ROUTES  (/pin/*)
+# ----------------------------------
+
+from sqlalchemy import or_
+
+@boundary_bp.route("/pin/dashboard")
+@login_required
+def pin_dashboard():
+    stats = {
+        "total": Request.query.filter_by(pinID=current_user.userID).count(),
+        "draft": Request.query.filter(
+            Request.pinID == current_user.userID,
+            Request.status.ilike("draft")
+        ).count(),
+        "open": Request.query.filter(
+            Request.pinID == current_user.userID,
+            Request.status.ilike("open")
+        ).count(),
+        "completed": Request.query.filter(
+            Request.pinID == current_user.userID,
+            Request.status.ilike("completed")
+        ).count(),
+    }
+
+    matches_count = stats["completed"]
+
+    return render_template(
+        "pin/dashboard.html",
+        stats=stats,
+        matches_count=matches_count
+    )
+
+@boundary_bp.route("/pin/requests")
+@login_required
+def pin_requests():
+    from app.control.pin_searchRequest_controller import PinSearchRequestController
+    from app.entity.category import Category
+
+    # --- pagination ---
+    page = request.args.get("page", 1, type=int)
+    per_page = 9
+
+    # --- search keyword ---
+    search_query = request.args.get("search", "").strip()
+
+    # --- run controller query ---
+    controller = PinSearchRequestController()
+    all_requests = controller.searchRequests(current_user.userID, keyword=search_query)
+
+    # --- paginate manually ---
+    total = len(all_requests)
+    start = (page - 1) * per_page
+    end = start + per_page
+    paginated = all_requests[start:end]
+
+    # --- simple pagination helper ---
+    class SimplePagination:
+        def __init__(self, page, per_page, total):
+            self.page = page
+            self.per_page = per_page
+            self.total = total
+            self.pages = (total + per_page - 1) // per_page
+            self.has_prev = page > 1
+            self.has_next = page < self.pages
+            self.prev_num = page - 1
+            self.next_num = page + 1
+
+    pagination = SimplePagination(page, per_page, total)
+
+    return render_template(
+        "pin/requests.html",
+        requests=paginated,
+        pagination=pagination,
+        search_query=search_query,
+    )
+
+@boundary_bp.route("/pin/requests/<int:request_id>")
+@login_required
+def pin_view_request(request_id):
+    from app.control.pin_viewRequest_controller import PinViewRequestController
+    try:
+        req = PinViewRequestController().viewRequestDetails(request_id)
+    except Exception as e:
+        flash(str(e), "danger")
+        return redirect(url_for("boundary.pin_requests"))
+
+    return render_template("pin/view_request.html", request=req)
+
+
+
+@boundary_bp.route("/pin/requests/create", methods=["GET", "POST"])
+@login_required
+def pin_create_request():
+    from app.entity.category import Category
+    categories = Category.query.filter_by(isActive=True).all()
+
+    if request.method == "POST":
+        category_id = request.form.get("category_id")
+        title = request.form.get("title")
+        description = request.form.get("description")
+
+        try:
+            success = PinCreateRequestController().createRequest(
+                userID=current_user.userID,
+                categoryID=category_id,
+                title=title,
+                description=description
+            )
+            if success:
+                flash("Request created successfully.", "success")
+                return redirect(url_for("boundary.pin_requests"))
+        except Exception as e:
+            flash(str(e), "danger")
+
+    return render_template("pin/create_request.html", categories=categories)
+
+
+@boundary_bp.route("/pin/requests/<int:request_id>/edit", methods=["GET", "POST"])
+@login_required
+def pin_edit_request(request_id):
+    from app.entity.request import Request
+    from app.entity.category import Category
+    from app.control.pin_updateRequest_controller import PinUpdateRequestController
+
+    req = Request.query.get(request_id)
+    if not req or req.pinID != current_user.userID:
+        raise NotFound("Request not found or unauthorized.")
+
+    # fetch active categories for dropdown
+    categories = Category.query.filter_by(isActive=True).all()
+
+    if request.method == "POST":
+        # grab inputs
+        title = request.form.get("title")
+        description = request.form.get("description")
+        status = request.form.get("status")
+        category_id = request.form.get("category_id", type=int)
+
+        # NOTE: we are NOT letting user pick newRequestID from the form,
+        # so we pass None for that param in UML.
+        try:
+            PinUpdateRequestController().updateRequest(
+                requestID=req.requestID,
+                newRequestID=None,                     # not changing PK in UI
+                userID=current_user.userID,            # auth
+                categoryID=category_id,
+                title=title,
+                description=description,
+                status=status
+            )
+            flash("Request updated.", "success")
+            return redirect(url_for("boundary.pin_requests"))
+        except Exception as e:
+            flash(str(e), "danger")
+
+    return render_template("pin/edit_request.html", req=req, categories=categories)
+
+
+@boundary_bp.route("/pin/requests/<int:request_id>/delete", methods=["POST"])
+@login_required
+def pin_delete_request(request_id):
+    from app.control.pin_deleteRequest_controller import PinDeleteRequestController
+    try:
+        PinDeleteRequestController().deleteRequest(request_id, current_user.userID)
+        flash("Request deleted successfully.", "warning")
+    except Exception as e:
+        flash(str(e), "danger")
+    return redirect(url_for("boundary.pin_requests"))
+
+
+@boundary_bp.route("/pin/match-records", methods=["GET"])
+@login_required
+def pin_match_records():
+    from app.control.pin_searchMatchRecord_controller import PinSearchMatchRecordController
+
+    # Get filters
+    category_query = request.args.get("category", "").strip()
+    start_date = request.args.get("start_date", "").strip()
+    end_date = request.args.get("end_date", "").strip()
+    page = request.args.get("page", 1, type=int)
+    per_page = 10
+
+    # Controller call
+    results = PinSearchMatchRecordController().searchMatchRecord(
+        current_user.userID, category_query, start_date, end_date
+    )
+
+    # Manual pagination
+    total = len(results)
+    start = (page - 1) * per_page
+    end = start + per_page
+    paginated_matches = results[start:end]
+
+    class SimplePagination:
+        def __init__(self, page, per_page, total):
+            self.page = page
+            self.per_page = per_page
+            self.total = total
+            self.pages = (total + per_page - 1) // per_page
+            self.has_prev = page > 1
+            self.has_next = page < self.pages
+            self.prev_num = page - 1
+            self.next_num = page + 1
+
+    pagination = SimplePagination(page, per_page, total)
+
+    return render_template(
+        "pin/matches.html",
+        matches=paginated_matches,
+        pagination=pagination,
+        category_query=category_query,
+        start_date=start_date,
+        end_date=end_date
+    )
+
+
+@boundary_bp.route("/pin/requests/<int:request_id>/view-counters")
+@login_required
+def pin_request_counters(request_id):
+    views = PinTrackViewsController().trackViews(request_id)
+    shorts = PinTrackShortlistsController().trackShortlists(request_id)
+    flash(f"Views: {views} | Shortlisted: {shorts}", "info")
+    return redirect(url_for("boundary.pin_requests"))
