@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}My Match History - CSR{% endblock %}
+
+{% block nav_links %}
+<a href="{{ url_for('boundary.csr_dashboard') }}" class="text-gray-700 hover:text-primary">Dashboard</a>
+<a href="{{ url_for('boundary.csr_requests') }}" class="text-gray-700 hover:text-primary">Requests</a>
+<a href="{{ url_for('boundary.csr_shortlist') }}" class="text-gray-700 hover:text-primary">Shortlist</a>
+{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">My Completed History Services</h1>
+    <p class="text-gray-600 mt-2">Filter your volunteer history by category or date range.</p>
+</div>
+
+<!-- 🔍 Filter Section -->
+<div class="bg-white rounded-lg shadow mb-6 p-4">
+    <form method="GET" action="{{ url_for('boundary.csr_matches') }}" class="flex flex-wrap gap-3 items-center">
+        <!-- Category Filter -->
+        <select name="category"
+                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+                <option value="{{ cat.categoryID }}" {% if selected_category == cat.categoryID %}selected{% endif %}>
+                    {{ cat.categoryName }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <!-- Start Date -->
+        <input type="date"
+               name="start_date"
+               value="{{ start_date }}"
+               class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+
+        <!-- End Date -->
+        <input type="date"
+               name="end_date"
+               value="{{ end_date }}"
+               class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+
+        <button type="submit"
+                class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition text-sm">
+            Search
+        </button>
+
+        {% if selected_category or start_date or end_date %}
+        <a href="{{ url_for('boundary.csr_matches') }}"
+           class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm">
+            Clear
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Table -->
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Request</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Person-in-Need</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Completed On</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for match in matches %}
+            <tr>
+                <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ match.request.title }}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">{{ match.category.categoryName }}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">{{ match.person_in_need.name }}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">
+                    {{ match.completedAt.strftime('%Y-%m-%d') if match.completedAt else 'N/A' }}
+                </td>
+                <td class="px-6 py-4 text-sm text-green-700 font-medium">{{ match.status|capitalize }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                    No completed matches found for selected filters.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+{% if pagination.pages > 1 %}
+<div class="mt-8 flex justify-end items-center gap-4">
+    {% if pagination.has_prev %}
+    <a href="{{ url_for('boundary.csr_matches', page=pagination.prev_num, category=selected_category, start_date=start_date, end_date=end_date) }}"
+       class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">← Previous</a>
+    {% else %}
+    <span class="px-4 py-2 text-gray-400 cursor-not-allowed">← Previous</span>
+    {% endif %}
+
+    <span class="text-sm text-gray-600">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+
+    {% if pagination.has_next %}
+    <a href="{{ url_for('boundary.csr_matches', page=pagination.next_num, category=selected_category, start_date=start_date, end_date=end_date) }}"
+       class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-700 transition">Next →</a>
+    {% else %}
+    <span class="px-4 py-2 text-gray-400 cursor-not-allowed">Next →</span>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
