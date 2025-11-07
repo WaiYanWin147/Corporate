@@ -8,7 +8,10 @@ login_manager = LoginManager()
 def create_app():
     app = Flask(__name__, template_folder="templates", static_folder="static")
     app.config.from_object("app.config.Config")
-    db.init_app(app)
+    if test_config:                    # ADD: allow tests to override settings 
+        app.config.update(test_config)
+
+    db.init_app(app) 
     login_manager.init_app(app)
 
     with app.app_context():
@@ -23,6 +26,9 @@ def create_app():
         register_blueprints(app)
 
     login_manager.login_view = "boundary.login"
+    @app.get("/health")            # health endpoint so CI has a deterministic check
+    def health():
+        return {"status": "ok"}, 200
     return app
 
 def register_blueprints(app):
