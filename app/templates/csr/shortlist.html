@@ -14,7 +14,7 @@
     <p class="text-gray-600 mt-2">Requests you've saved for later</p>
 </div>
 
-<!-- 🔍 Filter by Category -->
+<!-- Filter by Category -->
 <div class="bg-white rounded-lg shadow mb-6 p-4">
     <form method="GET" action="{{ url_for('boundary.csr_shortlist') }}" class="flex gap-2 items-center">
         <label class="text-sm text-gray-600">Search by category:</label>
@@ -38,7 +38,7 @@
     </form>
 </div>
 
-<!-- 💾 Shortlisted Requests -->
+<!-- Shortlisted Requests -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {% for req in requests %}
     <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
