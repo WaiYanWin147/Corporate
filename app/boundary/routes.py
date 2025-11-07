@@ -71,22 +71,11 @@ def logout():
     AuthController().logout()
     return redirect(url_for("boundary.index"))
 
+from flask_login import login_required
+from flask import render_template
 from app.entity.user_account import UserAccount
 from app.entity.user_profile import UserProfile
 from app import db
-
-#!!!! --- ADMIN GUARD (simple) ---
-def admin_required(fn):
-    from functools import wraps
-    @wraps(fn)
-    @login_required
-    def wrapper(*args, **kwargs):
-        if getattr(current_user, "role", None) != "admin":
-            flash("Admin access required.", "warning")
-            return redirect(url_for("boundary.index"))
-        return fn(*args, **kwargs)
-    return wrapper
-#!!!! --- ADMIN GUARD (simple) DELETE THIS FUNCTION!!!--- 
 
 @boundary_bp.route("/admin/dashboard")
 @login_required
@@ -106,29 +95,48 @@ def admin_dashboard():
         total_profiles=total_profiles
     )
 
-# Users list + search !!! need to fix
+# Users list + search 
 @boundary_bp.route("/admin/users")
-@admin_required
+@login_required
 def admin_users():
     from app.entity.user_account import UserAccount
     search_query = request.args.get("search", "").strip()
     page = request.args.get("page", 1, type=int)
     per_page = 10
 
-    q = UserAccount.query
-    #!!! fix this loop
-    if search:
-        q = q.filter(UserAccount.name.ilike(f"%{search}%"))
-    #!!! class need action
-    pagination = q.order_by(UserAccount.userID.desc()).paginate(
-        page=page, per_page=per_page, error_out=False
-    )
-    return render_template("admin/users.html",
-                           users=pagination.items,
-                           pagination=pagination,
-                           search_query=search)
+    if search_query:
+        users = UserAdminSearchUserAccountController().searchUserAccountByName(search_query)
+        total = len(users)
+        start = (page - 1) * per_page
+        end = start + per_page
+        pagination_users = users[start:end]
 
-# Create user (GET form + POST submit) !!!! need to fix
+        # Define a simple pagination helper dynamically
+        class Pagination:
+            def __init__(self, page, per_page, total, items):
+                self.page = page
+                self.per_page = per_page
+                self.total = total
+                self.items = items
+                self.pages = (total + per_page - 1) // per_page
+                self.has_prev = page > 1
+                self.has_next = page < self.pages
+                self.prev_num = page - 1
+                self.next_num = page + 1
+
+        pagination = Pagination(page, per_page, total, pagination_users)
+
+    else:
+        pagination = UserAccount.query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return render_template(
+        "admin/users.html",
+        users=pagination.items,
+        pagination=pagination,
+        search_query=search_query,
+    )
+
+# Create user (GET form + POST submit)
 @boundary_bp.route("/admin/users/create", methods=["GET", "POST"])
 @login_required
 def admin_create_user():
@@ -139,26 +147,36 @@ def admin_create_user():
         name = request.form.get("name")
         email = request.form.get("email")
         password = request.form.get("password")
-        # !!! inconsistant. fix this
-        if not all([name, email, password]):
-            flash("Name, email and password are required.", "warning")
-            return render_template("admin/create_user.html")
+        age = request.form.get("age") or None
+        phone = request.form.get("phoneNumber") or None   # correct field name
+        profile_id = request.form.get("profile_id")
 
-        # minimal create (hash later)
-        user = UserAccount(name=name, email=email, password=password, role=role, isActive=True)
-        db.session.add(user)
-        db.session.commit()
-        flash("User account created.", "success")
-        return redirect(url_for("boundary.admin_users"))
-    return render_template("admin/create_user.html")
-    # !!! inconsistant. fix this
+        try:
+            ok = UserAdminCreateUserAccountController().createUserAccount(
+                name, email, password, age, phone, profile_id
+            )
+            if ok:
+                flash("User account created successfully.", "success")
+                return redirect(url_for("boundary.admin_users"))
+        except Exception as e:
+            flash(str(e), "danger")
+
+    return render_template("admin/create_user.html", profiles=profiles)
 
 # view user account detail
 @boundary_bp.route("/admin/users/<int:user_id>")
-@admin_required
-# !!!!!! need error handling here
+@login_required
 def admin_view_user(user_id):
-    user = UserAccount.query.get_or_404(user_id)
+    try:
+        user = UserAdminViewUserAccountController().viewUserAccount(user_id)
+    except Exception as e:
+        flash(str(e), "danger")
+        return redirect(url_for("boundary.admin_users"))
+
+    if not user:
+        flash("User not found.", "warning")
+        return redirect(url_for("boundary.admin_users"))
+
     return render_template("admin/view_user.html", user=user)
 
 # Update user account
@@ -169,22 +187,28 @@ def admin_edit_user(user_id):
     from app.entity.user_account import UserAccount
     profiles = UserProfile.query.filter_by(isActive=True).all()
     user = UserAccount.query.get(user_id)
-    
+
     if not user:
         flash("User not found.", "danger")
         return redirect(url_for("boundary.admin_users"))
-        
+
     if request.method == "POST":
         name = request.form.get("name")
         email = request.form.get("email")
         password = request.form.get("new_password") or None
-        # !!! need other data to match also
+        age = request.form.get("age") or None
+        phone = request.form.get("phoneNumber") or None
+        profile_id = request.form.get("profile_id") or None
+
         try:
             ok = UserAdminUpdateUserAccountController().updateUserAccount(
                 userID=user_id,
                 name=name,
                 email=email,
-                password=password # !!! need other data to match also
+                password=password,
+                age=age,
+                phoneNumber=phone,
+                profileID=profile_id
             )
             if ok:
                 flash("User updated successfully.", "success")
