@@ -5,7 +5,7 @@ filtered by category and date period.
 """
 from app.entity.match_record import MatchRecord
 from datetime import datetime
-from sqlalchemy import func   # ✅ Add this
+from sqlalchemy import func
 
 class CsrSearchHistoryController:
     def searchHistory(self, userID: int, category_id: int = None, start_date: str = None, end_date: str = None):
