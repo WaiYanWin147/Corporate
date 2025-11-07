@@ -14,7 +14,6 @@ class CsrRemoveShortlistController:
             raise ValueError("Shortlist entry not found.")
 
         try:
-            # ✅ optional improvement — update request shortlist counter
             req = record.request  # uses the relationship you added earlier
             if req and req.shortlistCount and req.shortlistCount > 0:
                 req.shortlistCount -= 1
@@ -26,3 +25,4 @@ class CsrRemoveShortlistController:
         except Exception as e:
             db.session.rollback()
             raise RuntimeError(f"Failed to remove from shortlist: {e}")
+
