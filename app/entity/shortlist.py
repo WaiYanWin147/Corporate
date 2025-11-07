@@ -8,8 +8,7 @@ class Shortlist(db.Model):
     requestID = db.Column(db.Integer, db.ForeignKey("requests.requestID", ondelete="CASCADE"), nullable=False)
     csrRepID = db.Column(db.Integer, db.ForeignKey("user_accounts.userID"), nullable=False)
     createdAt = db.Column(db.DateTime, server_default=db.func.now(), nullable=False)
-
-    # ✅ This is the key part
+    
     request = db.relationship("Request", back_populates="shortlists", lazy=True)
 
     csr_representative = db.relationship(
