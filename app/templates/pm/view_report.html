@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{{ report.reportType|capitalize }} Report - {{ report.period }}{% endblock %}
+
+{% block nav_links %}
+<a href="{{ url_for('boundary.pm_dashboard') }}" class="text-gray-700 hover:text-primary">Dashboard</a>
+<a href="{{ url_for('boundary.pm_categories') }}" class="text-gray-700 hover:text-primary">Manage Categories</a>
+<a href="{{ url_for('boundary.pm_reports') }}" class="text-primary font-medium">Reports</a>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow p-8">
+        <div class="mb-6 pb-6 border-b border-gray-200">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                {{ report.reportType|capitalize }} Report - {{ report.period }}
+            </h1>
+            <div class="flex gap-4 text-sm text-gray-600">
+                <span>Generated: <strong>{{ report.generatedAt.strftime('%B %d, %Y') }}</strong></span>
+                <span>Report ID: <strong>{{ report.reportID }}</strong></span>
+            </div>
+        </div>
+
+        {% if content.summary %}
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">System Summary</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div class="bg-blue-50 rounded-lg p-4">
+                    <p class="text-sm text-gray-600">Total Users</p>
+                    <p class="text-2xl font-bold text-blue-600">{{ content.summary.total_users }}</p>
+                </div>
+                <div class="bg-green-50 rounded-lg p-4">
+                    <p class="text-sm text-gray-600">Total Requests</p>
+                    <p class="text-2xl font-bold text-green-600">{{ content.summary.total_requests }}</p>
+                </div>
+                <div class="bg-yellow-50 rounded-lg p-4">
+                    <p class="text-sm text-gray-600">Open Requests</p>
+                    <p class="text-2xl font-bold text-yellow-600">{{ content.summary.open_requests }}</p>
+                </div>
+                <div class="bg-purple-50 rounded-lg p-4">
+                    <p class="text-sm text-gray-600">Closed Requests</p>
+                    <p class="text-2xl font-bold text-purple-600">{{ content.summary.closed_requests }}</p>
+                </div>
+                <div class="bg-indigo-50 rounded-lg p-4">
+                    <p class="text-sm text-gray-600">Total Matches</p>
+                    <p class="text-2xl font-bold text-indigo-600">{{ content.summary.total_matches }}</p>
+                </div>
+                <div class="bg-pink-50 rounded-lg p-4">
+                    <p class="text-sm text-gray-600">Recent Matches (30d)</p>
+                    <p class="text-2xl font-bold text-pink-600">{{ content.summary.recent_matches_30_days }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if content.category_breakdown %}
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Category Breakdown</h2>
+            <div class="bg-gray-50 rounded-lg overflow-hidden">
+                <table class="min-w-full">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Category</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Total</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Open</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Closed</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for category_name, stats in content.category_breakdown.items() %}
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ category_name }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-600">{{ stats.total_requests }}</td>
+                            <td class="px-4 py-3 text-sm text-green-600">{{ stats.open_requests }}</td>
+                            <td class="px-4 py-3 text-sm text-purple-600">{{ stats.closed_requests }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="mt-6">
+        <a href="{{ url_for('boundary.pm_reports') }}" class="text-primary hover:text-blue-700">
+            ← Back to Reports
+        </a>
+    </div>
+</div>
+{% endblock %}
